@@ -30,13 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
       formKey.currentState.save();//save once fields are valid, onSaved method invoked for every form fields
       setState(() {
         autovalidate=true;
-       _userLogin();
+     //  _userLogin();
       });
     }
   }
 
   _userLogin(){
-
+    Dialogs.showLoadingDialog(context,Constant.keyLoad);
     login(_phoneNumber.text,_pinNumber.text).then((response) {
       if(response['token']!=null){
         setValue(response['token']);
@@ -45,10 +45,9 @@ class _LoginScreenState extends State<LoginScreen> {
         setUserRole(response['user']['role']);
         setUserImage(response['user']['image']);
         setUserPhoneNo(response['user']['contact']);
-        Dialogs.showLoadingDialog(context,Constant.keyLoad);
-        Navigator.pushNamed(context, '/visitorScreen');
       }
       else if(response['errors']!=null){
+        Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
         print(response['errors']['pin'][0]);
         Get.snackbar('${response['errors']['pin'][0]}','',snackPosition:SnackPosition.TOP);
       }
@@ -147,6 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   InkWell(
                     onTap: (){
                       _formValidation();
+                      if(autovalidate==true){
+                        _userLogin();
+                        Dialogs.showLoadingDialog(context,Constant.keyLoad);
+                        Navigator.pushNamed(context, '/visitorScreen');
+                      }
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width,

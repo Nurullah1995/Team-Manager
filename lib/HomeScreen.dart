@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final formKey = GlobalKey<FormState>();
   bool autovalidate = false;
   bool _passwordVisible = true;
+  bool _load = false;
 
 
   _formValidation() {
@@ -33,25 +36,28 @@ class _HomeScreenState extends State<HomeScreen> {
       formKey.currentState.save();//save once fields are valid, onSaved method invoked for every form fields
     setState(() {
       autovalidate=true;
+     // _userLogin();
       _userLogin();
     });
   }
   }
 
-  _userLogin(){
 
+
+  _userLogin(){
+    Dialogs.showLoadingDialog(context,Constant.keyLoad);
     login(_phoneNumber.text,_pinNumber.text).then((response) {
+
       if(response['token']!=null){
         setValue(response['token']);
          setUserName(response['user']['name']);
         setUserRole(response['user']['role']);
          setUserImage(response['user']['image']);
          setUserPhoneNo(response['user']['contact']);
-      //  _loginResponseController.setLoginResoponse(response);
-        Dialogs.showLoadingDialog(context,Constant.keyLoad);
-        Navigator.pushNamed(context,'/visitorScreen');
+         Navigator.pushNamed(context,'/visitorScreen');
       }
       else if(response['errors']!=null){
+        Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
           print(response['errors']['pin'][0]);
          Get.snackbar('${response['errors']['pin'][0]}','',snackPosition:SnackPosition.TOP);
       }
@@ -64,6 +70,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget loadingIndicator =_load? new Container(
+      color: Colors.grey[300],
+      width: 70.0,
+      height: 70.0,
+      child: new Padding(padding: const EdgeInsets.all(5.0),child: new Center(child: new CircularProgressIndicator())),
+    ):new Container();
+
     return SafeArea(
       child: Scaffold(
         backgroundColor:  Color(0xffffffff),
@@ -173,6 +186,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialButtonForWhole('লগইন করুন',onPressed: (){
                     _formValidation();
                   },),
+                  SizedBox(height: 20,),
+                  RichText(
+                    text: TextSpan(
+                      text: 'নিবন্ধন করতে চান ?',
+                      style: TextStyle(color: Colors.grey),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: '   নিবন্ধন করুন ',
+                          style: TextStyle(color: Constant.primaryColor),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                             Navigator.pushNamed(context, '/registrationScreen');
+                          }),
+                      ],
+                    ),
+                  ),
                   Expanded(
                     flex: 2,
                     child: Container(

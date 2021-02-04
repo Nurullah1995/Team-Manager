@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   _loginSelectionPage()async{
        var token=await getTokenValue();
        print(token);
-       token==null?Navigator.pushNamed(context, '/homeScreen'):Navigator.pushNamed(context, '/visitorScreen');
+       token==null?Navigator.pushReplacementNamed(context, '/homeScreen'):Navigator.pushReplacementNamed(context, '/visitorScreen');
   }
 
   @override

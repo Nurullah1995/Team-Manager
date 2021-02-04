@@ -552,9 +552,8 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
 
                                     }else{
                                       _formValidation(context);
-                                      Dialogs.showLoadingDialog(context, Constant.keyLoad);
+                                       Dialogs.showLoadingDialog(context, Constant.keyLoad);
                                       _insertData();
-
                                     }
                                   },
                                   child: Container(
@@ -572,18 +571,6 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                               ],
                             ),
                           ),
-                        // Builder(
-                        //   // Create an inner BuildContext so that the onPressed methods
-                        //   // can refer to the Scaffold with Scaffold.of().
-                        //   builder: (BuildContext context) {                    // context - 2
-                        //     if(unicheckResponse==null){
-                        //       return
-                        //     }
-                        //     else{
-                        //       return Container();
-                        //     }
-                        //   },
-                        // ),
                         ],
                       ),
                     ):Container(),

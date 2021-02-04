@@ -65,11 +65,11 @@ class _VisitorScreenState extends State<VisitorScreen> {
         actions: <Widget>[
           new FlatButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: new Text('No'),
+            child: new Text('না'),
           ),
           new FlatButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: new Text('Yes'),
+            child: new Text('হা'),
           ),
         ],
       ),
@@ -125,7 +125,9 @@ class _VisitorScreenState extends State<VisitorScreen> {
                         height: 60,
                         width: 60,
                         child:
-                        (userImage == null) ? Image.asset('assets/avatar-circle.png') : Image.network(userImage ),
+                       // (userImage == null) ?
+                        Image.asset('assets/avatar-circle.png')
+                           // : Image.network(userImage ),
                       ),
                     ],
                   ),
@@ -187,7 +189,10 @@ class _VisitorScreenState extends State<VisitorScreen> {
                         shape: BoxShape.circle,
                         image: new DecorationImage(
                           fit: BoxFit.fill,
-                          image:(userImage == null) ? AssetImage('assets/avatar-circle.png') : NetworkImage(userImage),
+                          image:
+                         // (userImage == null) ?
+                          AssetImage('assets/avatar-circle.png')
+                              //: NetworkImage(userImage),
                         )
                     )),
                 Expanded(

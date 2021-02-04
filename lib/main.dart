@@ -8,6 +8,7 @@ import 'View/Screen/BusinessInfo/SelectedUpdateCategoryforUpdateScreen.dart';
 import 'View/Screen/District/DistrictListType.dart';
 import 'View/Screen/District/selectDistrictForUpdatePage.dart';
 import 'View/Screen/Login/LoginScreen.dart';
+import 'View/Screen/Login/registration_screen.dart';
 import 'View/Screen/NextFollwoUP/NextFollowUpScreen.dart';
 import 'View/Screen/PinRest/PinResetSucessfullLoader.dart';
 import 'View/Screen/Report/ReportScreen.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => SplashScreen(),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/homeScreen': (context) => HomeScreen(),
+        '/registrationScreen': (context) => RegistrationScreen(),
         '/visitorScreen': (context) => VisitorScreen(),
         '/loginScreen': (context) => LoginScreen(),
          '/registerCategory': (context) => SelectBusinessCategory(),
