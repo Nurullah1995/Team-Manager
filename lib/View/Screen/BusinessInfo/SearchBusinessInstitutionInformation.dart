@@ -55,7 +55,7 @@ class SearchInstituteInformation extends SearchDelegate<FetchVisitedPlaceModel> 
         ? suggestionList = visitList //In the true case
         : suggestionList.addAll(visitList.where(
       // In the false case
-          (element) => element.orgName.toLowerCase().startsWith(query),
+          (element) => element.orgContact.toLowerCase().startsWith(query),
     ));
 
     return ListView.builder(
@@ -84,7 +84,7 @@ class SearchInstituteInformation extends SearchDelegate<FetchVisitedPlaceModel> 
                 title:RichText(
                  text: TextSpan(
                    text: suggestionList[index].orgName.substring(0,query.length),
-                   style:TextStyle(color: Colors.green,fontWeight: FontWeight.bold),
+                     style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold),
                    children:[
                      TextSpan(
                        text: suggestionList[index].orgName.substring(query.length),
@@ -105,7 +105,18 @@ class SearchInstituteInformation extends SearchDelegate<FetchVisitedPlaceModel> 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(suggestionList[index].orgContact),
+                        RichText(
+                          text: TextSpan(
+                              text: suggestionList[index].orgContact.substring(0,query.length),
+                              style:TextStyle(color: Colors.green,fontWeight: FontWeight.bold),
+                              children:[
+                                TextSpan(
+                                  text: suggestionList[index].orgContact.substring(query.length),
+                                  style: TextStyle(color: Colors.grey,),
+                                )
+                              ]
+                          ),
+                        ),
                         Text(suggestionList[index].visitedDateTime.toString(),
                           style: GoogleFonts.roboto(fontSize: 11),),
                       ],

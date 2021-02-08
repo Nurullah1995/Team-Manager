@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:test_app/Controller/Category/ShopCategoryController.dart';
 import 'package:test_app/Controller/District/DistrictController.dart';
+import 'package:test_app/Service/SharePrefarence.dart';
 import 'package:test_app/Service/UniqueContactCheck_service.dart';
 import 'package:test_app/Service/submit_allInfo-service.dart';
 import 'package:test_app/Util/Constant.dart';
@@ -31,9 +34,13 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
   TextEditingController districtTypeCtlr=TextEditingController();
   TextEditingController thanaTypeCtlr=TextEditingController();
   TextEditingController detailsAddressCtlr=TextEditingController();
+  TextEditingController noteCtlr=TextEditingController();
   TextEditingController dateCtlr;
   File images_one;
-
+  String showDemoImage='https://cdn3.iconfinder.com/data/icons/photo-tools/65/select-512.png';
+  String alterNativeImage='https://cdn3.iconfinder.com/data/icons/photo-tools/65/select-512.png';
+  String alterNativeDate='DD/MM/YYYY';
+  String demoDate='DD/MM/YYYY';
    String latitude;
    String logitute;
    var _currentAddress;
@@ -134,7 +141,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
 
   bool autovalidate = false;
 
-  final fkey = GlobalKey<FormState>();
+ // final fkey = GlobalKey<FormState>();
    MaterialColor buttonTextColor = const MaterialColor(
      0xff39B54A,
     const <int, Color>{
@@ -151,7 +158,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
     },
   );
   DateTime selectedStartDate;
-
+  var date;
 
   void _pickStartDateDialog() {
     showDatePicker(
@@ -190,9 +197,9 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
 
   _formValidation(BuildContext context) {
       print(_controller.selectedBusinessItemName);
-    if (fkey.currentState.validate()) {
+    if (Constant.formkey.currentState.validate()) {
      // form is valid, proceed further
-      fkey.currentState.save();//save once fields are valid, onSaved method invoked for every form fields
+      Constant.formkey.currentState.save();//save once fields are valid, onSaved method invoked for every form fields
     }
 
     setState(() {
@@ -213,7 +220,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
 
  String unicheckResponse;
   _insertData(){
-   var date=selectionDate();
+    date=selectionDate();
    print(date);
    submitAllInfo(
         phoneNumberCtlr.text,
@@ -224,7 +231,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
         images_one,
         latitude,logitute,
         _districtController.selectedDistrictItem,
-        thanaTypeCtlr.text,detailsAddressCtlr.text)
+        thanaTypeCtlr.text,detailsAddressCtlr.text,noteCtlr.text)
         .then((response) {
       if(response.statusCode == 200)
       {
@@ -235,7 +242,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
       }
       else
       {
-
+        Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
         response.stream.bytesToString().then((message){
           print(message);
 
@@ -279,7 +286,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
             padding: const EdgeInsets.all(25.0),
             child: SingleChildScrollView(
               child: Form(
-                key: fkey,
+                key: Constant.formkey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -307,9 +314,8 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                           hintText: "এখানে লিখুন",
                         ),
                       ),
-                    Text(unicheckResponse==null?'':unicheckResponse,style: TextStyle(color: Colors.red),),
+                  //  Text(unicheckResponse==null?'':unicheckResponse,style: TextStyle(color: Colors.red),),
                     SizedBox(height: 10,),
-                    unicheckResponse==null?
                    Container(
                       child: Column(
                         children: [
@@ -330,15 +336,31 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                               return null;
                             },
                             onTap: (){
-                              uniqueCkeckContact(phoneNumberCtlr.text).then((response) {
-                                 if(response['found']==true){
-                                   setState(() {
-                                     unicheckResponse=response['message'];
-                                     print(unicheckResponse);
-                                   });
-                                 }
-
+                              fetchFoundDataList(phoneNumberCtlr.text).then((result) {
+                                setState(() {
+                                  ownerNameCtlr.text=result['orgOwnerName'];
+                                  businessNameCtlr.text=result['orgName'];
+                                  _controller.selectedBusinessItemName=result['orgTypeName'];
+                                  _districtController.selectedDistrictItemName=result['districtName'];
+                                  thanaTypeCtlr.text=result['thana'];
+                                  detailsAddressCtlr.text=result['address'];
+                                  demoDate=result['nextFollowup'];
+                                  showDemoImage=result['orgImg'];
+                                  _controller.selectedBusinessRadioItem=result['orgTypeId'].toString();
+                                  _districtController.selectedDistrictItem=result['district'].toString();
+                                });
                               });
+
+
+                              // uniqueCkeckContact(phoneNumberCtlr.text).then((response) {
+                              //    if(response['found']==true){
+                              //      setState(() {
+                              //        unicheckResponse=response['message'];
+                              //        print(unicheckResponse);
+                              //      });
+                              //    }
+                              //
+                              // });
                             },
                             decoration: InputDecoration(
                               isDense: true,                      // Added this
@@ -346,7 +368,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                               hintText: "এখানে লিখুন",
                             ),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: 15,),
                           Container(
                             child: Column(
                               children: [
@@ -372,7 +394,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     hintText: "এখানে লিখুন",
                                   ),
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -399,7 +421,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                   ),
                                 ),
 
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -425,7 +447,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -450,7 +472,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     hintText: "এখানে লিখুন",
                                   ),
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -467,7 +489,36 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     // hintText: _currentAddress,
                                   ),
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
+                                Container(
+                                  child: Row(
+                                    children: [
+                                      Text("নোট",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                     // Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  child: new TextFormField (
+                                    controller: noteCtlr,
+                                    keyboardType: TextInputType.multiline,
+                                    minLines: 1,
+                                    maxLines: 10,
+                                    decoration: InputDecoration(
+                                      isDense: true,                      // Added this
+                                      contentPadding: EdgeInsets.all(8),
+                                       hintText: 'এখানে লিখুন',
+                                    ),
+                                    // validator: (value) {
+                                    //   if (value.isEmpty) {
+                                    //     return 'অনুগ্রহ নোট লিখুন';
+                                    //   }
+                                    //   return null;
+                                    // },
+                                  ),
+                                  padding: new EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                                ),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -489,7 +540,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                       child: Text(
                                           selectedStartDate ==
                                               null //ternary expression to check if date is null
-                                              ? 'DD/MM/YYYY'
+                                              ? demoDate!=null?demoDate:alterNativeDate
                                               : '${DateFormat('d MMMM y').format(selectedStartDate)}',
                                           style: TextStyle(
                                               color: Constant
@@ -512,7 +563,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 Container(
                                   child: Row(
                                     children: [
@@ -521,7 +572,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 10,),
+                                SizedBox(height: 15,),
                                 InkWell(
                                     onTap: (){
                                       //  getImageFromCamera();
@@ -535,7 +586,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                       width:MediaQuery.of(context).size.width,
                                       color: Colors.white,
                                       child:images_one !=null?Image.file(images_one,fit: BoxFit.fill,):
-                                      Image.asset('assets/photo.png',fit: BoxFit.fill,height: 50,width: 50,),
+                                      Image.network(showDemoImage!=null?showDemoImage:alterNativeImage,fit: BoxFit.fill,height: 50,width: 50,),
                                     ),
                                 ),
                                 Text(images_one==null?'অনুগ্রহপূর্বক ব্যবসা  প্রতিষ্টানের ফটো আপলোড করুন':'ফটো সফল ভাবে আপলোড হয়েছে',style: GoogleFonts.roboto(color: Colors.green,fontSize: 16),),
@@ -543,18 +594,18 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                                 InkWell(
                                   onTap: (){
                                     _formValidation(context);
-                                    if(images_one==null){
-                                      Get.snackbar('warning...??', 'Please give me input all of informtaion ',
-                                        snackPosition: SnackPosition.BOTTOM,
-                                        backgroundColor: Colors.black,
-                                        colorText: Colors.white,
-                                      );
-
-                                    }else{
-                                      _formValidation(context);
-                                       Dialogs.showLoadingDialog(context, Constant.keyLoad);
-                                      _insertData();
-                                    }
+                                    Dialogs.showLoadingDialog(context, Constant.keyLoad);
+                                    _insertData();
+                                    // if(images_one==null){
+                                    //   Get.snackbar('warning...??', 'Please give me input all of informtaion ',
+                                    //     snackPosition: SnackPosition.BOTTOM,
+                                    //     backgroundColor: Colors.black,
+                                    //     colorText: Colors.white,
+                                    //   );
+                                    //
+                                    // }else{
+                                    //
+                                    // }
                                   },
                                   child: Container(
                                     width: MediaQuery.of(context).size.width,
@@ -573,7 +624,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
                           ),
                         ],
                       ),
-                    ):Container(),
+                    ),
                   ],
                 ),
               ),
@@ -583,6 +634,8 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
       ),
     );
   }
+
+
 
 
 

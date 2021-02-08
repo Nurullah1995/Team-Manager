@@ -18,7 +18,6 @@ class VisitorScreen extends StatefulWidget {
 
 class _VisitorScreenState extends State<VisitorScreen> {
   // final LoginResponseController _loginResponseController=Get.find();
-  var scaffoldKey = GlobalKey<ScaffoldState>();
   static const IconData logout = IconData(0xe848, fontFamily: 'MaterialIcons');
   Future<List<FetchVisitedPlaceModel>> _visitList;
   List<FetchVisitedPlaceModel> _completedvisitList;
@@ -28,6 +27,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
     String userContact;
   @override
   void initState() {
+
     // TODO: implement initState
     super.initState();
     _visitList = fetchVisitShopList();
@@ -43,6 +43,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
     });
      getUserRole().then((result) {
        userRole=result;
+       print(userRole);
      });
   }
 
@@ -68,7 +69,9 @@ class _VisitorScreenState extends State<VisitorScreen> {
             child: new Text('না'),
           ),
           new FlatButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
             child: new Text('হা'),
           ),
         ],
@@ -88,7 +91,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
        //  },
         child: Scaffold(
           //  drawerScrimColor: Colors.yellow,
-          key:scaffoldKey ,
+          key:Constant.scaffoldKeyForvisitPlace ,
           drawer: Drawer(
             child: new ListView(
               padding: EdgeInsets.zero,
@@ -116,7 +119,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(userName==null?'Loading..':userName,style: GoogleFonts.notoSans(color: Color(0xff333333),fontWeight: FontWeight.bold),),
-                            Text(userRole==null?'Loading..':userRole,style: GoogleFonts.notoSans(color: Color(0xff333333),fontWeight: FontWeight.bold),),
+                            Text(userRole==null?'Team Name':userRole,style: GoogleFonts.notoSans(color: Color(0xff333333),fontWeight: FontWeight.bold),),
 
                           ],
                         ),
@@ -175,7 +178,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
             leading: IconButton(
               icon: Icon(Icons.menu),
               onPressed: (){
-                scaffoldKey.currentState.openDrawer();
+                Constant.scaffoldKeyForvisitPlace.currentState.openDrawer();
               },
             ),
             title: Row(
@@ -261,19 +264,19 @@ class _VisitorScreenState extends State<VisitorScreen> {
                               ),
                               child: Center(child: Text(_visitList[index].orgName[0].toUpperCase(),style: TextStyle(color: Colors.white,fontSize: 20),)),
                             ),
-                            title: Text(_visitList[index].orgName),
+                            title: Text(_visitList[index].orgName.toUpperCase(),style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold),),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.only(top: 5,bottom: 5),
-                                  child: Text("${_visitList[index].thana},${_visitList[index].district}"),
+                                  child: Text("${_visitList[index].thana},   ${_visitList[index].district}"),
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Text(_visitList[index].orgContact,style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
-                                    Text(_visitList[index].visitedDateTime.toString(),style: GoogleFonts.roboto(fontSize: 10),),
+                                    Text(_visitList[index].orgContact,style: TextStyle(fontSize: 14,fontWeight: FontWeight.normal,color: Constant.primaryColor),),
+                                    Text(_visitList[index].visitedDateTime.toString(),style: GoogleFonts.roboto(fontSize: 10,color: Colors.red),),
                                   ],
                                 ),
                               ],

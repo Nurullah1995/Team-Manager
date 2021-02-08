@@ -28,6 +28,9 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
 
   }
 
+  var demoDate='';
+  var demoImage='https://www.dicetower.com/sites/default/files/styles/image_300/public/game-art/no-image-available_1.png?itok=4AoejwSQ';
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -135,7 +138,7 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
                        ),
                        Container(
                          height: 50,
-                         child: Text(visitedPlaceDetails.nextFollowup==null?'':visitedPlaceDetails.nextFollowup,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                         child: Text(visitedPlaceDetails.nextFollowup==null?demoDate:visitedPlaceDetails.nextFollowup,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
                        ),
                      ],
                    ),
@@ -149,9 +152,10 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
            ),
            Padding(
              padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 40),
-             child: Image.network(visitedPlaceDetails.orgImg,height: 250,width: MediaQuery.of(context).size.width,fit: BoxFit.fill,),
+             child: Image.network(visitedPlaceDetails.orgImg==null?demoImage:visitedPlaceDetails.orgImg,height: 250,width: MediaQuery.of(context).size.width,fit: BoxFit.fill,),
            ),
            MaterialButtonForWhole('তথ্য আপডেট করুন',onPressed: (){
+
              //onclick listener
              Navigator.push(context, MaterialPageRoute(builder: (context)=>EdiitShopBusinessDetailsInfo(widget.singleProductId,visitedPlaceDetails)));
            },),

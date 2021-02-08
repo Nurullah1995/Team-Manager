@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setValue(response['token']);
         print(response['token']);
         setUserName(response['user']['name']);
-        setUserRole(response['user']['role']);
+        setUserRole(response['user']['team']);
         setUserImage(response['user']['image']);
         setUserPhoneNo(response['user']['contact']);
       }

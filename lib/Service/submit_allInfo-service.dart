@@ -6,7 +6,7 @@ import 'package:test_app/Util/Constant.dart';
 
 import 'SharePrefarence.dart';
 
-Future submitAllInfo(String contact, String ownerName, String orgName,String orgType, String newFollow, File img,String lat, String long ,String distict,String thana, String address) async {
+Future submitAllInfo(String contact, String ownerName, String orgName,String orgType, String newFollow, File img,String lat, String long ,String distict,String thana, String address,String feedBack) async {
   var token=await getTokenValue();
   Map<String, String> headers = {
    //  HttpHeaders.contentTypeHeader: 'application/json',
@@ -29,17 +29,22 @@ Future submitAllInfo(String contact, String ownerName, String orgName,String org
     request.fields['nextFollowup'] = newFollow;
   }
  // request.fields['orgImage'] = productinfo.regularPrice;
-  request.files.add(
-      await http.MultipartFile.fromPath(
-        'orgImage',
-        img.path,
-      )
-  );
+  if(img!=null){
+    request.files.add(
+        await http.MultipartFile.fromPath(
+          'orgImage',
+          img.path,
+        )
+    );
+  }
   request.fields['lat'] = lat;
   request.fields['long'] = long;
   request.fields['district'] = distict;
   request.fields['thana'] = thana;
   request.fields['address'] = address;
+  if(feedBack!=null){
+    request.fields['feedback'] = feedBack;
+  }
 
   final response = await request.send();
   return response;

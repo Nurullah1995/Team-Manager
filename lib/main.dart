@@ -5,6 +5,7 @@ import 'HomeScreen.dart';
 import 'Util/Constant.dart';
 import 'View/Screen/BusinessInfo/SelectedBusinessType.dart';
 import 'View/Screen/BusinessInfo/SelectedUpdateCategoryforUpdateScreen.dart';
+import 'View/Screen/BusinessInfo/ShowBusinessInformation.dart';
 import 'View/Screen/District/DistrictListType.dart';
 import 'View/Screen/District/selectDistrictForUpdatePage.dart';
 import 'View/Screen/Login/LoginScreen.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/homeScreen': (context) => HomeScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/visitorScreen': (context) => VisitorScreen(),
+        // '/showbusinessInfo': (context) => ShowBusinessInformation(),
         '/loginScreen': (context) => LoginScreen(),
          '/registerCategory': (context) => SelectBusinessCategory(),
          '/districtTypeforRegister': (context) => DistrictListType(),

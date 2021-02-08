@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:test_app/Util/Constant.dart';
 import 'package:test_app/View/Screen/Visitor/VisitorScreen.dart';
 class SubmitSuccessFullPage extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _SubmitSuccessFullPageState extends State<SubmitSuccessFullPage> {
     super.initState();
     Timer(
         Duration(seconds: 1),
-            () => Navigator.pushNamed(context, '/visitorScreen'),
+            () => Navigator.popUntil(context, ModalRoute.withName('/visitorScreen')),
     );
   }
 
@@ -28,6 +29,20 @@ class _SubmitSuccessFullPageState extends State<SubmitSuccessFullPage> {
           children: [
                Image.asset("assets/13203-green-check-mark.gif"),
                Center(child: Text("ব্যবসা প্রতিষ্ঠানের তথ্য সফল ভাবে সাবমিট হয়েছে",style: TextStyle(color: Colors.black),)),
+
+            // Expanded(
+            //   flex: 2,
+            //     child: Container(
+            //
+            //     )
+            // ),
+            // RaisedButton(
+            //     child: Text('Ok',style: TextStyle(color: Colors.white),),
+            //     color: Constant.primaryColor,
+            //   onPressed: (){
+            //       Navigator.pushNamed(context, '/visitorScreen');
+            //   },
+            // ),
           ],
         ),
       ),

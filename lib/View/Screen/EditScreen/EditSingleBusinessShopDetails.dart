@@ -45,7 +45,8 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
   TextEditingController dateCtlr=TextEditingController();
   File images_one;
 
-
+   var demoDate='';
+   var demoImage='https://www.dicetower.com/sites/default/files/styles/image_300/public/game-art/no-image-available_1.png?itok=4AoejwSQ';
 
   @override
   void initState() {
@@ -103,7 +104,6 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
 
   bool autovalidate = false;
 
-  final formKey = GlobalKey<FormState>();
   MaterialColor buttonTextColor = const MaterialColor(
     0xff39B54A,
     const <int, Color>{
@@ -175,9 +175,9 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
     var formatedDate= dateCtlr.text;
    //print(_shopCategoryController.selectedUpdateBusinessItemName);
 
-   if (formKey.currentState.validate()) {
+   if (Constant.formkeyforEdit.currentState.validate()) {
      // form is valid, proceed further
-     formKey.currentState.save();
+     Constant.formkeyforEdit.currentState.save();
      //save once fields are valid, onSaved method invoked for every form fields
      Dialogs.showLoadingDialog(context, Constant.keyLoad);
      updateSingleBusinessItem(
@@ -249,7 +249,7 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
             padding: const EdgeInsets.all(25.0),
             child: SingleChildScrollView(
               child: Form(
-                key: formKey,
+                key: Constant.formkeyforEdit,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -497,7 +497,7 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
                           height: 250,
                           width: MediaQuery.of(context).size.width,
                           child:images_one !=null? Image.file(images_one,fit: BoxFit.fill,)
-                          :Image.network(widget.singleProductDetails.orgImg,fit: BoxFit.fill,),
+                          :Image.network(widget.singleProductDetails.orgImg!=null?widget.singleProductDetails.orgImg:demoImage,fit: BoxFit.fill,),
                         )
                     ),
                     Text(images_one==null?'অনুগ্রহপূর্বক ব্যবসা  প্রতিষ্টানের ফটো আপলোড করুন':'ফটো সফল ভাবে আপলোড হয়েছে ',style: GoogleFonts.roboto(color: Colors.green,fontSize: 16),),
@@ -505,6 +505,7 @@ class _EdiitShopBusinessDetailsInfoState extends State<EdiitShopBusinessDetailsI
                     InkWell(
                       onTap: (){
                         _formValidation(context);
+                        Constant.formkey.currentState?.reset();
                        //_formValidation();
                       },
                       child: Container(

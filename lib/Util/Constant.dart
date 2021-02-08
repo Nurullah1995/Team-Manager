@@ -6,7 +6,10 @@ class Constant{
   static const textColorWhite= const Color(0xffFFFFFF);
   static const black = const Color(0xff221D1D);
   static final keyLoad = GlobalKey();
-
-  static final String url = "https://smanagerit.xyz/crm";
+  static final formkey = GlobalKey<FormState>();
+  static final formkeyforEdit = GlobalKey<FormState>();
+  static final scaffoldKeyForvisitPlace = GlobalKey<ScaffoldState>();
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+  static final String url = "https://adbakshow.xyz/tm";
 
 }

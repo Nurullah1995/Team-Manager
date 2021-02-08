@@ -49,9 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
     login(_phoneNumber.text,_pinNumber.text).then((response) {
 
       if(response['token']!=null){
+        print(response['token']);
         setValue(response['token']);
          setUserName(response['user']['name']);
-        setUserRole(response['user']['role']);
+        setUserRole(response['user']['team']);
          setUserImage(response['user']['image']);
          setUserPhoneNo(response['user']['contact']);
          Navigator.pushNamed(context,'/visitorScreen');

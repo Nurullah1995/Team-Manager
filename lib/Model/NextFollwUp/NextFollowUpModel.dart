@@ -23,9 +23,9 @@ class NextFollowUpModel {
   });
 
   DateTime followupDate;
-  String total;
-  String followUpId;
-  String visitedPlaceId;
+  int total;
+  int followUpId;
+  int visitedPlaceId;
   String orgName;
   String orgOwner;
   String orgContact;
