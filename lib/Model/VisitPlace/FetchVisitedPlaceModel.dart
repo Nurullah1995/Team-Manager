@@ -19,7 +19,7 @@ class FetchVisitedPlaceModel {
     this.visitedDateTime,
   });
 
-  int id;
+  String id;
   String orgName;
   String orgContact;
   String orgOwner;

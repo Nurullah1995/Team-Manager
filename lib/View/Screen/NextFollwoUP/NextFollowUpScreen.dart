@@ -17,7 +17,7 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
  // final NextFollowUpController _nextFollowUpControllerr= Get.put(NextFollowUpController());
  List<NextFollowUpModel> _nextFollowUpList= List<NextFollowUpModel>();
 
- var isLoading=false;
+ var isLoading=true;
   @override
   void initState() {
     // TODO: implement initState
@@ -30,6 +30,7 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
     nextFlowUpList().then((response) {
       setState(() {
         _nextFollowUpList=response;
+        isLoading=false;
         print(_nextFollowUpList);
       });
     }
@@ -42,10 +43,11 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
     return SafeArea(
       child: WillPopScope(
         onWillPop: () async {
-          if (Constant.navigatorKey.currentState.canPop()) {
-            Constant.navigatorKey.currentState.pop();
-            return false;
-          }
+          // if (Constant.navigatorKey.currentState.canPop()) {
+          //   Constant.navigatorKey.currentState.pop();
+          //   return false;
+          // }
+          Navigator.pop(context);
           return true;
         },
         child: Scaffold(
@@ -53,14 +55,17 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
                   leading: IconButton(
                     icon: Icon(Icons.arrow_back,color:Constant.primaryTextColorGray,),
                     onPressed: (){
-                     // Navigator.pop(context);
-                      Navigator.pushNamed(context, '/visitorScreen');
+                      Navigator.pop(context);
+                     // Navigator.pushNamed(context, '/visitorScreen');
                     },
                   ),
                   backgroundColor: Constant.textColorWhite,
                   title:Text("পরবর্তি ফলোআপ লিস্ট",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
                 ),
-          body: _nextFollowUpList.isEmpty?Center(child: Text('ফলোআপ লিস্টে কোনো তথ্য নেই',style: TextStyle(color: Colors.red),)):Column(
+          body:
+          //_nextFollowUpList.isEmpty?Center(child: Text('ফলোআপ লিস্টে কোনো তথ্য নেই',style: TextStyle(color: Colors.red),))
+             isLoading?Center(child: CircularProgressIndicator())
+              :_nextFollowUpList.isEmpty?Center(child: Text('ফলোআপ লিস্টে কোনো তথ্য নেই',style: TextStyle(color: Colors.red,fontSize: 20),)):Column(
             children: [
               Container(
                 height: 50,
@@ -98,7 +103,7 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
                               ),
                               child: Center(child: Text(_nextFollowUpList[index].orgName[0].toUpperCase(),style: TextStyle(color: Colors.white,fontSize: 20),)),
                             ),
-                            title: Text(_nextFollowUpList[index].orgName.toUpperCase(),style: GoogleFonts.roboto(fontSize: 16,fontWeight: FontWeight.bold)),
+                            title:Text(_nextFollowUpList[index].orgName,style: GoogleFonts.roboto(fontWeight: FontWeight.bold,color: Colors.green),),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -109,15 +114,11 @@ class _NextFollowUpScreenState extends State<NextFollowUpScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Text(_nextFollowUpList[index].orgContact,style: TextStyle(fontSize: 14,fontWeight: FontWeight.normal,color: Constant.primaryColor),),
-                                    Text(_nextFollowUpList[index].followupDate.toString().substring(0,10),style: GoogleFonts.roboto(fontSize: 12,color: Colors.red),),
+                                    Text(_nextFollowUpList[index].orgContact,style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold,color: Colors.black),),
+                                    Text(_nextFollowUpList[index].followupDate.toString().substring(0,10),style: GoogleFonts.roboto(fontSize: 12,color: Colors.green),),
                                   ],
                                 ),
                               ],
-                            ),
-                            trailing: Container(
-                                padding: EdgeInsets.only(top: 15),
-                                child: Icon(Icons.keyboard_arrow_right,size: 30,)
                             ),
                             isThreeLine: true,
                           ),

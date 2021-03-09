@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="TM Manager"
+        android:label="Team Manager"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

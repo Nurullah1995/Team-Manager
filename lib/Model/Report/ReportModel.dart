@@ -20,14 +20,14 @@ class ReportModel {
     this.followupThisYear,
   });
 
-  int visitToday;
-  int visitThisWeek;
-  int visitThisMonth;
-  int visitThisYear;
-  int followupToday;
-  int followupThisWeek;
-  int followupThisMonth;
-  int followupThisYear;
+  String visitToday;
+  String visitThisWeek;
+  String visitThisMonth;
+  String visitThisYear;
+  String followupToday;
+  String followupThisWeek;
+  String followupThisMonth;
+  String followupThisYear;
 
   factory ReportModel.fromJson(Map<String, dynamic> json) => ReportModel(
     visitToday: json["visitToday"],

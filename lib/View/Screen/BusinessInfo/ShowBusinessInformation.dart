@@ -6,6 +6,7 @@ import 'package:test_app/Service/Show_single_businessInstiution_info.dart';
 import 'package:test_app/Util/Constant.dart';
 import 'package:test_app/View/Screen/EditScreen/EditSingleBusinessShopDetails.dart';
 import 'package:test_app/View/Widget/MaterialButtonForWholeApp.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShowBusinessInformation extends StatefulWidget {
   final int singleProductId;
@@ -16,6 +17,8 @@ class ShowBusinessInformation extends StatefulWidget {
 
 class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
   VisitedPlace visitedPlaceDetails;
+
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +30,8 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
     });
 
   }
+
+
 
   var demoDate='';
   var demoImage='https://www.dicetower.com/sites/default/files/styles/image_300/public/game-art/no-image-available_1.png?itok=4AoejwSQ';
@@ -92,7 +97,11 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
                        ),
                        Container(
                          height: 50,
-                         child: Text('পরবর্তি ফলোয়াপ ',style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                         child: Text('নোট',style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                       ),
+                       Container(
+                         height: 50,
+                         child: Text('পরিবর্তী ফলোআপ',style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
                        ),
                      ],
                    ),
@@ -120,9 +129,23 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
                          height: 50,
                          child: Text(visitedPlaceDetails.visitTime==null?'Loading ..':visitedPlaceDetails.visitTime,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
                        ),
-                       Container(
-                         height: 50,
-                         child: Text(visitedPlaceDetails.contact==null?'Loading ..':visitedPlaceDetails.contact,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         crossAxisAlignment: CrossAxisAlignment.center,
+                         children: [
+                           Container(
+                             height: 50,
+                             child: Text(visitedPlaceDetails.contact==null?'Loading ..':visitedPlaceDetails.contact,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                           ),
+                           InkWell(
+                             child: Image.asset(
+                               'assets/phoneCall.png',height: 40,width: 40,
+                             ),
+                             onTap: (){
+                               launch(('tel://${visitedPlaceDetails.contact}'));
+                             },
+                           ),
+                         ],
                        ),
                        Container(
                          height: 50,
@@ -135,6 +158,10 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
                        Container(
                          height: 50,
                          child: Text(visitedPlaceDetails.address==null?'Loading ..':visitedPlaceDetails.address,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
+                       ),
+                       Container(
+                         height: 50,
+                         child: Text(visitedPlaceDetails.feedback==null?'Loading ..':visitedPlaceDetails.feedback,style: GoogleFonts.roboto(color: Constant.primaryTextColorGray),),
                        ),
                        Container(
                          height: 50,
@@ -152,7 +179,7 @@ class _ShowBusinessInformationState extends State<ShowBusinessInformation> {
            ),
            Padding(
              padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 40),
-             child: Image.network(visitedPlaceDetails.orgImg==null?demoImage:visitedPlaceDetails.orgImg,height: 250,width: MediaQuery.of(context).size.width,fit: BoxFit.fill,),
+             child: Image.network(visitedPlaceDetails.orgImg==null?demoImage:visitedPlaceDetails.orgImg,height: 250,width: MediaQuery.of(context).size.width,fit: BoxFit.cover,),
            ),
            MaterialButtonForWhole('তথ্য আপডেট করুন',onPressed: (){
 

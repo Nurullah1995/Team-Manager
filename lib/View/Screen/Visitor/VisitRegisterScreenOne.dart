@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,10 +11,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:test_app/Controller/Category/ShopCategoryController.dart';
-import 'package:test_app/Controller/District/DistrictController.dart';
+import 'package:searchable_dropdown/searchable_dropdown.dart';
+import 'package:test_app/Model/Category/FetchCategoryShopModel.dart';
+import 'package:test_app/Model/District/FetchAllDistrictModel.dart';
+import 'package:test_app/Service/CategoryShopService.dart';
 import 'package:test_app/Service/SharePrefarence.dart';
 import 'package:test_app/Service/UniqueContactCheck_service.dart';
+import 'package:test_app/Service/district_service.dart';
 import 'package:test_app/Service/submit_allInfo-service.dart';
 import 'package:test_app/Util/Constant.dart';
 import 'package:test_app/View/Widget/SubmiDialog.dart';
@@ -25,8 +29,6 @@ class VisitRegisterScreenOne extends StatefulWidget {
 }
 
 class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
-  ShopCategoryController _controller=Get.put(ShopCategoryController());
-  DistrictController _districtController=Get.put(DistrictController());
   TextEditingController phoneNumberCtlr=TextEditingController();
   TextEditingController ownerNameCtlr=TextEditingController();
   TextEditingController businessNameCtlr=TextEditingController();
@@ -36,9 +38,10 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
   TextEditingController detailsAddressCtlr=TextEditingController();
   TextEditingController noteCtlr=TextEditingController();
   TextEditingController dateCtlr;
+   String currentDateTime;
+
   File images_one;
-  String showDemoImage='https://cdn3.iconfinder.com/data/icons/photo-tools/65/select-512.png';
-  String alterNativeImage='https://cdn3.iconfinder.com/data/icons/photo-tools/65/select-512.png';
+  String showDemoImage='assets/smartphone.png';
   String alterNativeDate='DD/MM/YYYY';
   String demoDate='DD/MM/YYYY';
    String latitude;
@@ -46,9 +49,23 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
    var _currentAddress;
 
 
+  List<FetchAllDistrict>  _districtList=[];
+  List<FetchShopCategory>  _shopCategoryList=[];
+  Map<String, String> selectedDistrictMapitemValue = Map();
+  Map<String, String> selectedCategoryMapitemValue = Map();
+
+
+
+
   @override
   void initState() {
     super.initState();
+
+    //Fetch District list from Api
+    _fetchDistrict();
+   //Fetch category list from api
+    _fetchCategory();
+
     _getCurrentPosition().then((value) {
       setState(() {
         latitude=value.latitude.toString();
@@ -58,12 +75,54 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
         print(latitude);
       });
     });
-    _controller.selectedBusinessRadioItem=null;
-    _controller.selectedBusinessItemName=null;
-    _districtController.selectedDistrictItemName=null;
-    _districtController.selectedDistrictItem=null;
+
+    final DateTime now = DateTime.now();
+    final DateFormat formatter = DateFormat.yMMMMd('en_US');
+    currentDateTime = formatter.format(now);
+     phoneNumberCtlr.addListener(() {
+       _phoneNumberCheckThanFetch();
+     });
+
+
   }
 
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    phoneNumberCtlr.dispose();
+  }
+
+
+   _phoneNumberCheckThanFetch(){
+     fetchFoundDataList(phoneNumberCtlr.text).then((result) {
+       setState(() {
+         ownerNameCtlr.text=result['orgOwnerName'];
+         businessNameCtlr.text=result['orgName'];
+         selectedCategoryMapitemValue['name']=result['orgTypeName'];
+         selectedDistrictMapitemValue['name']=result['districtName'];
+         thanaTypeCtlr.text=result['thana'];
+         detailsAddressCtlr.text=result['address'];
+         demoDate=result['nextFollowup'];
+         findCategoryIdByName=result['orgTypeId'];
+         findDistrictIdByName=result['district'];
+       });
+     });
+   }
+
+  _fetchDistrict(){
+    fetchDistrictList().then((response) {
+      _districtList.addAll(response);
+    });
+  }
+
+  _fetchCategory(){
+    fetchCategoyShopList().then((response) {
+      _shopCategoryList.addAll(response);
+    });
+
+  }
 
 
   String convertDateTimeDisplay(String date) {
@@ -115,7 +174,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
   final picker = ImagePicker();
 
   Future getImageFromCamera() async {
-    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25);
+    final pickedFile = await picker.getImage(source: ImageSource.camera,imageQuality: 25,maxHeight: 600, maxWidth: 900 );
 
     setState(() {
       if (pickedFile != null) {
@@ -127,7 +186,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
     });
   }
   Future getImageFromGallery() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25);
+    final pickedFile = await picker.getImage(source: ImageSource.gallery,imageQuality: 25,maxHeight: 600, maxWidth: 900);
 
     setState(() {
       if (pickedFile != null) {
@@ -193,10 +252,25 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
     );
   }
 
+  //Find Id name
+  var findDistrictIdByName;
+  void selectedDistrictItemNameFunction(List<FetchAllDistrict>  districtList){
+    var trendIndex= districtList.indexWhere((f) => f.name == selectedDistrictMapitemValue['name']);
+    findDistrictIdByName=districtList[trendIndex].id.toString();
+    print(findDistrictIdByName);
+  }
 
+  var findCategoryIdByName;
+  void selectedCategoryItemNameFunction(List<FetchShopCategory>  categoryList){
+    var trendIndex= categoryList.indexWhere((f) => f.name == selectedCategoryMapitemValue['name']);
+    findCategoryIdByName=categoryList[trendIndex].id;
+    print(findCategoryIdByName);
+  }
+
+
+  //validation
 
   _formValidation(BuildContext context) {
-      print(_controller.selectedBusinessItemName);
     if (Constant.formkey.currentState.validate()) {
      // form is valid, proceed further
       Constant.formkey.currentState.save();//save once fields are valid, onSaved method invoked for every form fields
@@ -221,16 +295,18 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
  String unicheckResponse;
   _insertData(){
     date=selectionDate();
-   print(date);
+    // print(date);
+    // print(demoDate);
+    print(latitude);
    submitAllInfo(
         phoneNumberCtlr.text,
         ownerNameCtlr.text,
         businessNameCtlr.text,
-        _controller.selectedBusinessRadioItem,
+       findCategoryIdByName.toString(),
         date,
         images_one,
         latitude,logitute,
-        _districtController.selectedDistrictItem,
+        findDistrictIdByName.toString(),
         thanaTypeCtlr.text,detailsAddressCtlr.text,noteCtlr.text)
         .then((response) {
       if(response.statusCode == 200)
@@ -245,6 +321,7 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
         Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
         response.stream.bytesToString().then((message){
           print(message);
+          Get.snackbar('অভিন্ন প্রতিষ্ঠান', 'ইতো মধ্যেই আজকে এই প্রতিষ্ঠানটি ভিজিট  করা হয়েছে ');
 
         });
 
@@ -256,377 +333,391 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-       data: ThemeData(
-           primaryColor:Colors.green ,
-           accentColor: Colors.green,
-          cardColor:  Colors.green,
-           backgroundColor:  Colors.green,
-//           highlightColor: red,
-//           splashColor: green
-       ),
-      child: SafeArea(
-        child: Scaffold(
-          //backgroundColor: ColorConfig.textColorWhite,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back,color:Constant.primaryTextColorGray,),
-              onPressed: (){
-                _controller.selectedBusinessRadioItem=null;
-                _controller.selectedBusinessItemName=null;
-                _districtController.selectedDistrictItemName=null;
-                _districtController.selectedDistrictItem=null;
-                Navigator.pop(context);
-              },
-            ),
-            backgroundColor: Constant.textColorWhite,
-            title:Text("প্রতিষ্ঠান ভিজিট নিবন্ধন করুন",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
+    return SafeArea(
+      child: Scaffold(
+        //backgroundColor: ColorConfig.textColorWhite,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back,color:Constant.primaryTextColorGray,),
+            onPressed: (){
+              Navigator.pop(context);
+            },
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(25.0),
-            child: SingleChildScrollView(
-              child: Form(
-                key: Constant.formkey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                      Container(
-                        child: Row(
-                          children: [
-                            Text("ব্যবসা প্রতিষ্ঠানের ফোন নাম্বার",style: TextStyle(color: Color(0xff4A4A4A)),),
-                            Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                          ],
-                        ),
-                      ),
-                      TextFormField(
-                        controller:phoneNumberCtlr,
-                        keyboardType:TextInputType.number,
-                        maxLength: 11,
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের ফোন নাম্বার লিখুন';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          isDense: true,                      // Added this
-                          contentPadding: EdgeInsets.all(8),
-                          hintText: "এখানে লিখুন",
-                        ),
-                      ),
-                  //  Text(unicheckResponse==null?'':unicheckResponse,style: TextStyle(color: Colors.red),),
-                    SizedBox(height: 10,),
-                   Container(
-                      child: Column(
+          backgroundColor: Constant.textColorWhite,
+          title:Text("প্রতিষ্ঠান ভিজিট নিবন্ধন করুন",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 10,bottom: 25,right: 25,left: 25),
+          child: SingleChildScrollView(
+            child: Form(
+              key: Constant.formkey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 0,bottom: 15),
+                    child: Center(child: Text(currentDateTime,style: GoogleFonts.alata(color: Colors.green,fontWeight: FontWeight.bold,fontSize: 18),)),
+                  ),
+                    Container(
+                      child: Row(
                         children: [
-                          Container(
-                            child: Row(
-                              children: [
-                                Text("ব্যবসা প্রতিষ্ঠানের মালিকের নাম",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                              ],
-                            ),
-                          ),
-                          TextFormField(
-                            controller:ownerNameCtlr ,
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return 'অনুগ্রহ পূর্বক বব্যবসা প্রতিষ্ঠানের মালিকের নাম লিখুন';
-                              }
-                              return null;
-                            },
-                            onTap: (){
-                              fetchFoundDataList(phoneNumberCtlr.text).then((result) {
-                                setState(() {
-                                  ownerNameCtlr.text=result['orgOwnerName'];
-                                  businessNameCtlr.text=result['orgName'];
-                                  _controller.selectedBusinessItemName=result['orgTypeName'];
-                                  _districtController.selectedDistrictItemName=result['districtName'];
-                                  thanaTypeCtlr.text=result['thana'];
-                                  detailsAddressCtlr.text=result['address'];
-                                  demoDate=result['nextFollowup'];
-                                  showDemoImage=result['orgImg'];
-                                  _controller.selectedBusinessRadioItem=result['orgTypeId'].toString();
-                                  _districtController.selectedDistrictItem=result['district'].toString();
-                                });
-                              });
-
-
-                              // uniqueCkeckContact(phoneNumberCtlr.text).then((response) {
-                              //    if(response['found']==true){
-                              //      setState(() {
-                              //        unicheckResponse=response['message'];
-                              //        print(unicheckResponse);
-                              //      });
-                              //    }
-                              //
-                              // });
-                            },
-                            decoration: InputDecoration(
-                              isDense: true,                      // Added this
-                              contentPadding: EdgeInsets.all(8),
-                              hintText: "এখানে লিখুন",
-                            ),
-                          ),
-                          SizedBox(height: 15,),
-                          Container(
-                            child: Column(
-                              children: [
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("ব্যবসা প্রতিষ্ঠানের নাম",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller:businessNameCtlr ,
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের নাম লিখুন';
-                                    }
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                    isDense: true,                      // Added this
-                                    contentPadding: EdgeInsets.all(8),
-                                    hintText: "এখানে লিখুন",
-                                  ),
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("ব্যবসা প্রতিষ্ঠানের ধরন",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                TextFormField(
-                                  onTap: (){
-                                    Navigator.pushNamed(context, '/registerCategory');
-                                  },
-                                  decoration:  InputDecoration(
-                                    isDense: true,                      // Added this
-                                    contentPadding: EdgeInsets.all(8),
-                                    focusColor: Colors.grey,
-                                    hoverColor:Colors.grey ,
-                                    hintText: _controller.selectedBusinessItemName==null?'সিলেক্ট করুন':_controller.selectedBusinessItemName,
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        Icons.keyboard_arrow_down,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("জেলার নাম সিলেক্ট করুন",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                TextFormField(
-                                  onTap: (){
-                                    Navigator.pushNamed(context, '/districtTypeforRegister');
-                                  },
-                                  decoration:  InputDecoration(
-                                    isDense: true,                      // Added this
-                                    contentPadding: EdgeInsets.all(8),
-                                    focusColor: Colors.grey,
-                                    hoverColor:Colors.grey ,
-                                    hintText: _districtController.selectedDistrictItemName==null?'সিলেক্ট করুন':_districtController.selectedDistrictItemName,
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        Icons.keyboard_arrow_down,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("থানার নাম লিখুন",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller:thanaTypeCtlr ,
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return 'অনুগ্রহ পূর্বক থানার নাম লিখুন';
-                                    }
-                                    return null;
-                                  },
-                                  decoration:  InputDecoration(
-                                    isDense: true,                      // Added this
-                                    contentPadding: EdgeInsets.all(8),
-                                    focusColor: Colors.grey,
-                                    hoverColor:Colors.grey ,
-                                    hintText: "এখানে লিখুন",
-                                  ),
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("বিস্তারিত ঠিকানা লিখুন",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller:detailsAddressCtlr ,
-                                  decoration: InputDecoration(
-                                    isDense: true,                      // Added this
-                                    contentPadding: EdgeInsets.all(8),
-                                    // hintText: _currentAddress,
-                                  ),
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("নোট",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                     // Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  child: new TextFormField (
-                                    controller: noteCtlr,
-                                    keyboardType: TextInputType.multiline,
-                                    minLines: 1,
-                                    maxLines: 10,
-                                    decoration: InputDecoration(
-                                      isDense: true,                      // Added this
-                                      contentPadding: EdgeInsets.all(8),
-                                       hintText: 'এখানে লিখুন',
-                                    ),
-                                    // validator: (value) {
-                                    //   if (value.isEmpty) {
-                                    //     return 'অনুগ্রহ নোট লিখুন';
-                                    //   }
-                                    //   return null;
-                                    // },
-                                  ),
-                                  padding: new EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("পরবর্তি ফলোয়াপ",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                  //
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .spaceBetween,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                      const EdgeInsets.only(
-                                          left: 10),
-                                      child: Text(
-                                          selectedStartDate ==
-                                              null //ternary expression to check if date is null
-                                              ? demoDate!=null?demoDate:alterNativeDate
-                                              : '${DateFormat('d MMMM y').format(selectedStartDate)}',
-                                          style: TextStyle(
-                                              color: Constant
-                                                  .black,
-                                              fontSize: 16,
-                                              fontFamily:
-                                              'SF Pro Text Regular')),
-                                    ),
-                                    Padding(
-                                      padding:
-                                      const EdgeInsets.only(
-                                          right: 20),
-                                      child:
-                                      InkWell(
-                                          onTap: (){
-                                            _pickStartDateDialog();
-                                          },
-                                          child: Icon(Icons.date_range)
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 15,),
-                                Container(
-                                  child: Row(
-                                    children: [
-                                      Text("ব্যবসা প্রতিষ্ঠানের ছবি আপলোড করুন",style: TextStyle(color: Color(0xff4A4A4A)),),
-                                      Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 15,),
-                                InkWell(
-                                    onTap: (){
-                                      //  getImageFromCamera();
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => Center(child: _DialogForFistCam()),
-                                      );
-                                    },
-                                    child: Container(
-                                      height: MediaQuery.of(context).size.height/3.5,
-                                      width:MediaQuery.of(context).size.width,
-                                      color: Colors.white,
-                                      child:images_one !=null?Image.file(images_one,fit: BoxFit.fill,):
-                                      Image.network(showDemoImage!=null?showDemoImage:alterNativeImage,fit: BoxFit.fill,height: 50,width: 50,),
-                                    ),
-                                ),
-                                Text(images_one==null?'অনুগ্রহপূর্বক ব্যবসা  প্রতিষ্টানের ফটো আপলোড করুন':'ফটো সফল ভাবে আপলোড হয়েছে',style: GoogleFonts.roboto(color: Colors.green,fontSize: 16),),
-                                SizedBox(height: 30,),
-                                InkWell(
-                                  onTap: (){
-                                    _formValidation(context);
-                                    Dialogs.showLoadingDialog(context, Constant.keyLoad);
-                                    _insertData();
-                                    // if(images_one==null){
-                                    //   Get.snackbar('warning...??', 'Please give me input all of informtaion ',
-                                    //     snackPosition: SnackPosition.BOTTOM,
-                                    //     backgroundColor: Colors.black,
-                                    //     colorText: Colors.white,
-                                    //   );
-                                    //
-                                    // }else{
-                                    //
-                                    // }
-                                  },
-                                  child: Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 50,
-                                    //  color: Colors.blue,
-                                    //  margin: EdgeInsets.only(bottom: 50),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      color: Constant.primaryColor,
-                                    ),
-                                    child: Center(child: Text("সাবমিট করুন",style: GoogleFonts.notoSans(fontSize: 16,color:Colors.white ),)),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
+                          Text("ব্যবসা প্রতিষ্ঠানের ফোন নাম্বার",style: TextStyle(color: Color(0xff4A4A4A)),),
+                          Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                    TextFormField(
+                      controller:phoneNumberCtlr,
+                      keyboardType:TextInputType.number,
+                      maxLength: 11,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের ফোন নাম্বার লিখুন';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        isDense: true,                      // Added this
+                        contentPadding: EdgeInsets.all(8),
+                        hintText: "এখানে লিখুন",
+                      ),
+                    ),
+                //  Text(unicheckResponse==null?'':unicheckResponse,style: TextStyle(color: Colors.red),),
+                  SizedBox(height: 10,),
+                 Container(
+                    child: Column(
+                      children: [
+                        Container(
+                          child: Row(
+                            children: [
+                              Text("ব্যবসা প্রতিষ্ঠানের মালিকের নাম",style: TextStyle(color: Color(0xff4A4A4A)),),
+                              Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                            ],
+                          ),
+                        ),
+                        TextFormField(
+                       //   focusNode: _focusNodeOwnerNameCtlr,
+                          controller:ownerNameCtlr ,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'অনুগ্রহ পূর্বক বব্যবসা প্রতিষ্ঠানের মালিকের নাম লিখুন';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            isDense: true,                      // Added this
+                            contentPadding: EdgeInsets.all(8),
+                            hintText: "এখানে লিখুন",
+                          ),
+                        ),
+                        SizedBox(height: 15,),
+                        Container(
+                          child: Column(
+                            children: [
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("ব্যবসা প্রতিষ্ঠানের নাম",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              TextFormField(
+                              //  focusNode: _focusNodeBusinessNameCtlr,
+                                controller:businessNameCtlr,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের নাম লিখুন';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  isDense: true,                      // Added this
+                                  contentPadding: EdgeInsets.all(8),
+                                  hintText: "এখানে লিখুন",
+                                ),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("ব্যবসা প্রতিষ্ঠানের ধরন",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                alignment: Alignment.topLeft,
+                                  child:  SearchableDropdown.single(
+                                    clearIcon: Icon(Icons.arrow_back_ios),
+                                    isExpanded: true,
+                                    key: Key(selectedCategoryMapitemValue["name"]),
+                                      items: _shopCategoryList != null?_shopCategoryList.map((item) {
+                                        return DropdownMenuItem<String>(
+                                          child: Text(item.name,style: TextStyle(color: Colors.black),),
+                                          value: item.name,
+                                        );
+                                      }).toList():[],
+                                      hint: new Text(selectedCategoryMapitemValue["name"]!=null?selectedCategoryMapitemValue["name"]:
+                                        'সিলেক্ট করুন ',
+                                        style: new TextStyle(
+                                            fontSize: 16,color: Colors.black54
+                                        ),
+
+                                      ),
+                                      searchHint: new Text(
+                                        'সার্চ করুন',
+                                        style: new TextStyle(
+                                            fontSize: 16,color: Colors.black54
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedCategoryMapitemValue["name"] = value;
+                                          print(selectedCategoryMapitemValue["name"]);
+                                          selectedCategoryItemNameFunction(_shopCategoryList);
+                                        });
+                                      },                                //   onChanged: (value) {
+                                  ),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("জেলার নাম সিলেক্ট করুন",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                 alignment: Alignment.topLeft,
+                                  child: SearchableDropdown.single(
+                                    clearIcon: Icon(Icons.arrow_back_ios),
+                                    isExpanded: true,
+                                    key: Key(selectedDistrictMapitemValue["name"]),
+                                    items: _districtList != null?_districtList.map((item) {
+                                      return DropdownMenuItem<String>(
+                                        child: Text(item.name,style: TextStyle(color: Colors.black),),
+                                        value: item.name,
+                                      );
+                                    }).toList():[],
+                                    hint: new Text(selectedDistrictMapitemValue["name"]!=null?selectedDistrictMapitemValue["name"]:
+                                    'সিলেক্ট করুন ',
+                                      style: new TextStyle(
+                                          fontSize: 16,color: Colors.black54
+                                      ),
+
+                                    ),
+                                    searchHint: new Text(
+                                      'সার্চ করুন',
+                                      style: new TextStyle(
+                                          fontSize: 16,color: Colors.black54
+                                      ),
+                                    ),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedDistrictMapitemValue["name"] = value;
+                                        print(selectedDistrictMapitemValue["name"]);
+                                        selectedDistrictItemNameFunction(_districtList);
+                                      });
+                                    },                                //   onChanged: (value) {
+                                  ),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("থানার নাম লিখুন",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              TextFormField(
+                               // focusNode: _focusNodeThanaTypeCtlr,
+                                controller:thanaTypeCtlr ,
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'অনুগ্রহ পূর্বক থানার নাম লিখুন';
+                                  }
+                                  return null;
+                                },
+                                decoration:  InputDecoration(
+                                  isDense: true,                      // Added this
+                                  contentPadding: EdgeInsets.all(8),
+                                  focusColor: Colors.grey,
+                                  hoverColor:Colors.grey ,
+                                  hintText: "এখানে লিখুন",
+                                ),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("বিস্তারিত ঠিকানা লিখুন",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              TextFormField(
+                               // focusNode: _focusNodedetailsAddressCtlr,
+                                controller:detailsAddressCtlr ,
+                                decoration: InputDecoration(
+                                  isDense: true,                      // Added this
+                                  contentPadding: EdgeInsets.all(8),
+                                  // hintText: _currentAddress,
+                                ),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("নোট",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                   // Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                child: new TextFormField (
+                                //  focusNode: _focusNodeNoteCtlr,
+                                  controller: noteCtlr,
+                                  keyboardType: TextInputType.multiline,
+                                  minLines: 1,
+                                  maxLines: 10,
+                                  decoration: InputDecoration(
+                                    isDense: true,                      // Added this
+                                   // contentPadding: EdgeInsets.all(8),
+                                     hintText: 'এখানে লিখুন',
+                                  ),
+                                  // validator: (value) {
+                                  //   if (value.isEmpty) {
+                                  //     return 'অনুগ্রহ নোট লিখুন';
+                                  //   }
+                                  //   return null;
+                                  // },
+                                ),
+                                //padding: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("পরিবর্তী ফলোআপ",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                                //
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment
+                                    .spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding:
+                                    const EdgeInsets.only(
+                                        left: 10),
+                                    child: Text(
+                                        selectedStartDate ==
+                                            null //ternary expression to check if date is null
+                                            ? demoDate!=null?demoDate:alterNativeDate
+                                            : '${DateFormat('d MMMM y').format(selectedStartDate)}',
+                                        style: TextStyle(
+                                            color: Constant
+                                                .black,
+                                            fontSize: 16,
+                                            fontFamily:
+                                            'SF Pro Text Regular')),
+                                  ),
+                                  Padding(
+                                    padding:
+                                    const EdgeInsets.only(
+                                        right: 20),
+                                    child:
+                                    InkWell(
+                                        onTap: (){
+                                          _pickStartDateDialog();
+                                        },
+                                        child: Icon(Icons.date_range)
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 15,),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text("ব্যবসা প্রতিষ্ঠানের ছবি আপলোড করুন",style: TextStyle(color: Color(0xff4A4A4A)),),
+                                    Text("*",style: TextStyle(color: Colors.red,fontSize: 20),),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 15,),
+                              InkWell(
+                                  onTap: (){
+                                    //  getImageFromCamera();
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => Center(child: _DialogForFistCam()),
+                                    );
+                                  },
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.height/3.5,
+                                    width:MediaQuery.of(context).size.width,
+                                    color: Colors.white,
+                                    child:images_one !=null?Image.file(images_one,fit: BoxFit.cover,):
+                                    Image.asset(showDemoImage,fit: BoxFit.contain),
+                                  ),
+                              ),
+                              Text(images_one==null?'অনুগ্রহপূর্বক ব্যবসা  প্রতিষ্টানের ফটো আপলোড করুন':'ফটো সফল ভাবে আপলোড হয়েছে',style: GoogleFonts.roboto(color: images_one==null?Colors.red:Colors.green,fontSize: 16),),
+                              SizedBox(height: 30,),
+                              InkWell(
+                                onTap: (){
+                                  _formValidation(context);
+                                  if(phoneNumberCtlr.text== "" || phoneNumberCtlr.text.length>11|| phoneNumberCtlr.text.length<11){
+                                    Get.snackbar('ফোন নাম্বার লিখুন', 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের সঠিক ফোন নাম্বার লিখুন');
+                                  }
+                                  else if(ownerNameCtlr.text== ""){
+                                    Get.snackbar('প্রতিষ্ঠানের মালিকের নাম লিখুন', 'অনুগ্রহ পূর্বক প্রতিষ্ঠানের মালিকের নাম লিখুন');
+                                  }
+                                  else if(businessNameCtlr.text==null){
+                                    Get.snackbar('প্রতিষ্ঠানের নাম লিখুন', 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের নাম লিখুন');
+                                  }
+                                  else if(findCategoryIdByName==null||selectedCategoryMapitemValue['name'] ==null){
+                                    Get.snackbar('ধরণ সিলেক্ট করুন', 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের ধরণ সিলেক্ট করুন');
+                                  }
+                                  else if(findDistrictIdByName==null ||selectedDistrictMapitemValue['name']==null){
+                                    Get.snackbar('জেলা সিলেক্ট করুন', 'অনুগ্রহ পূর্বক জেলা সিলেক্ট করুন');
+                                  }
+                                  else if(thanaTypeCtlr.text==""){
+                                    Get.snackbar('থানা সিলেক্ট করুন', 'অনুগ্রহ পূর্বক থানা সিলেক্ট করুন');
+                                  }
+                                  else if(images_one==null){
+                                    Get.snackbar('ফটো  বাছাই করুন', 'অনুগ্রহপূর্বক ব্যবসা  প্রতিষ্টানের ফটো আপলোড করুন');
+                                  }
+                                  else{
+                                    Dialogs.showLoadingDialog(context, Constant.keyLoad);
+                                    _insertData();
+                                  }
+                                },
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 50,
+                                  //  color: Colors.blue,
+                                  //  margin: EdgeInsets.only(bottom: 50),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Constant.primaryColor,
+                                  ),
+                                  child: Center(child: Text("সাবমিট করুন",style: GoogleFonts.notoSans(fontSize: 16,color:Colors.white ),)),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -634,9 +725,6 @@ class _VisitRegisterScreenOneState extends State<VisitRegisterScreenOne> {
       ),
     );
   }
-
-
-
 
 
   Widget _DialogForFistCam()=>  Wrap(

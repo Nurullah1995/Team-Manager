@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/Service/register_service.dart';
 import 'package:test_app/Util/Constant.dart';
 import 'package:http/http.dart' as http;
+import 'package:test_app/View/Widget/MaterialButtonForWholeApp.dart';
 import 'package:test_app/View/Widget/SubmiDialog.dart';
 
 
@@ -17,10 +18,14 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
 
+
     final TextEditingController _nameCtlr=TextEditingController();
     final TextEditingController _phoneNoCtlr=TextEditingController();
     final TextEditingController _pinNumberCtlr=TextEditingController();
     final TextEditingController _confirmPinCtlr=TextEditingController();
+    bool _passwordVisibleForPin = true;
+    bool _passwordVisibleForConfirmPin = true;
+
 
 
       Widget _textFormField(TextEditingController controller,){
@@ -39,8 +44,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               hintText: 'এখানে লিখুন',
             ));
       }
-    Widget _textFormFieldForNumber(TextEditingController controller,int maxlength){
+    Widget _textFormFieldForNumber(TextEditingController controller,int maxlength,bool obsecuretext,){
       return TextFormField(
+         obscureText: obsecuretext,
          keyboardType: TextInputType.number,
           maxLength: maxlength,
           controller:controller ,
@@ -57,6 +63,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             hintText: 'এখানে লিখুন',
           ));
     }
+
+
       Widget _title(String text){
         return  Container(
           alignment: Alignment.topLeft,
@@ -138,151 +146,204 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
              backgroundColor: Constant.primaryColor,
              title: Text("তথ্য যোগ করুন",style:GoogleFonts.notoSans(fontSize: 18,color:Constant.textColorWhite),),
            ),
-          body: new SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: new Column(
-              //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                new Container(
-                    height: MediaQuery.of(context).size.height/1.3,
-                    child: Form(
-                      key: _formKey,
-                      child: new ListView(
-                        children: <Widget>[
-                          SizedBox(height: 20,),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('কোম্পানির নাম'),
+          body:
+              Form(
+                key: _formKey,
+                child: new ListView(
+                  children: <Widget>[
+                    SizedBox(height: 20,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('কোম্পানির নাম'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            filled: true,
+                            border: InputBorder.none,
+                            fillColor: Colors.white,
+                            //  labelText: 'ভাড়ার পরিমাণ',
+                            hintText: 'সিলেক্ট করুন ',
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  border: InputBorder.none,
-                                  fillColor: Colors.white,
-                                  //  labelText: 'ভাড়ার পরিমাণ',
-                                  hintText: 'সিলেক্ট করুন ',
-                                ),
-                                value: companyIteamId,
-                                onChanged: (item) {
-                                  setState(() {
-                                    teamList = [];
-                                    teamId = null;
-                                    companyIteamId = item;
-                                    print(companyIteamId);
-                                    fetchTeamList(companyIteamId);
-                                  });
-                                },
-                                validator: (value) => value == null ? 'প্রয়োজনীয় তথ্য যোগ করুন' : null,
-                                items:
-                                companylist != null?companylist.map((item) {
-                                  return DropdownMenuItem<String>(
-                                    child: Text(item['name']),
-                                    value: item['id'].toString(),
-                                  );
-                                }).toList():[]
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20,),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('টিমের নাম'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  border: InputBorder.none,
-                                  fillColor: Colors.white,
-                                  //  labelText: 'ভাড়ার পরিমাণ',
-                                  hintText: 'সিলেক্ট করুন',
-                                ),
-                                value: teamId,
-                                onChanged: (item) {
-                                  setState(() {
-                                    teamId = item;
-                                    print(teamId);
-                                  });
-                                },
-                                validator: (value) => value == null ? 'প্রয়োজনীয় তথ্য যোগ করুন' : null,
-                                items:
-                                teamList != null?teamList.map((item) {
-                                  return DropdownMenuItem<String>(
-                                    child: Text(item['name']),
-                                    value: item['id'].toString(),
-                                  );
-                                }).toList():[]
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('নাম '),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
-                            child: _textFormField(_nameCtlr),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('মোবাইল নাম্বার'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
-                            child: _textFormFieldForNumber(_phoneNoCtlr,11),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('পিন নাম্বার'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
-                            child: _textFormFieldForNumber(_pinNumberCtlr,6),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,),
-                            child: _title('কনফার্ম পিন নাম্বার'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
-                            child: _textFormFieldForNumber(_confirmPinCtlr,6),
-                          ),
-                        ],
+                          value: companyIteamId,
+                          onChanged: (item) {
+                            setState(() {
+                              teamList = [];
+                              teamId = null;
+                              companyIteamId = item;
+                              print(companyIteamId);
+                              fetchTeamList(companyIteamId);
+                            });
+                          },
+                          validator: (value) => value == null ? 'প্রয়োজনীয় তথ্য যোগ করুন' : null,
+                          items:
+                          companylist != null?companylist.map((item) {
+                            return DropdownMenuItem<String>(
+                              child: Text(item['name']),
+                              value: item['id'].toString(),
+                            );
+                          }).toList():[]
+                        ),
                       ),
-                    )
+                    ),
+                    SizedBox(height: 20,),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('টিমের নাম'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            filled: true,
+                            border: InputBorder.none,
+                            fillColor: Colors.white,
+                            //  labelText: 'ভাড়ার পরিমাণ',
+                            hintText: 'সিলেক্ট করুন',
+                          ),
+                          value: teamId,
+                          onChanged: (item) {
+                            setState(() {
+                              teamId = item;
+                              print(teamId);
+                            });
+                          },
+                          validator: (value) => value == null ? 'প্রয়োজনীয় তথ্য যোগ করুন' : null,
+                          items:
+                          teamList != null?teamList.map((item) {
+                            return DropdownMenuItem<String>(
+                              child: Text(item['name']),
+                              value: item['id'].toString(),
+                            );
+                          }).toList():[]
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('নাম '),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,bottom: 10),
+                      child: _textFormField(_nameCtlr),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('মোবাইল নাম্বার'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
+                      child: _textFormFieldForNumber(_phoneNoCtlr,11,false),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('পিন নাম্বার'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
+                      child: TextFormField(
+                        controller:_pinNumberCtlr,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          filled: true,
+                          border: InputBorder.none,
+                          fillColor: Colors.white,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _passwordVisibleForPin ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: (){
+                              setState(() {
+                                _passwordVisibleForPin = !_passwordVisibleForPin;
+                              });
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          // add your custom validation here.
+                          if (value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 5) {
+                            return 'Must be more than 4 charater';
+                          }
+                          return null;
+                        },
+                        //val.length < 6 ? 'Password too short.' : null,
+                        // onSaved: (val) => _password = val,
+                        obscureText: _passwordVisibleForPin,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,),
+                      child: _title('কনফার্ম পিন নাম্বার'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,right: 25,top: 5,),
+                      child: TextFormField(
+                        controller: _confirmPinCtlr,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          filled: true,
+                          border: InputBorder.none,
+                          fillColor: Colors.white,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _passwordVisibleForConfirmPin ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: (){
+                              setState(() {
+                                _passwordVisibleForConfirmPin = !_passwordVisibleForConfirmPin;
+                              });
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          // add your custom validation here.
+                          if ( value!=_pinNumberCtlr.text) {
+                            return 'অনুগ্রহকপূর্বক একই পিন নম্বর প্রদান করুন';
+                          }
+                          // if (value.length < 5) {
+                          //   return 'Must be more than 4 charater';
+                          // }
+                          return null;
+                        },
+                        //val.length < 6 ? 'Password too short.' : null,
+                        // onSaved: (val) => _password = val,
+                        obscureText: _passwordVisibleForConfirmPin,
+                      ),
+                    ),
+                    SizedBox(height: 20,),
+                    MaterialButtonForWhole(
+                      'সাবমিট করুন',
+                      onPressed: (){
+                        _formValidation(context);
+                        if(_phoneNoCtlr.text=="" || _phoneNoCtlr.text.length>11|| _phoneNoCtlr.text.length<11){
+                          Get.snackbar('ফোন নাম্বার লিখুন', 'অনুগ্রহ পূর্বক ব্যবসা প্রতিষ্ঠানের সঠিক ফোন নাম্বার লিখুন');
+                        }
+                         Dialogs.showLoadingDialog(context,Constant.keyLoad);
+                        addUser(companyIteamId,teamId,_nameCtlr.text,_phoneNoCtlr.text,_pinNumberCtlr.text,_confirmPinCtlr.text).then((result){
+                          if(result['success']==true){
+                            Get.snackbar('${result['message']}','',snackPosition:SnackPosition.TOP);
+                            Navigator.pushNamed(context, '/regSuccessFull');
+                          }
+                          else if(result['contact']!=null){
+                            Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
+                            Get.snackbar('প্রদানকৃত নাম্বারে ইতোমধ্যে নিবন্ধন সম্পন্ন হয়েছে।','',snackPosition:SnackPosition.TOP);
+                          }else{
+                            Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
+                          }
+
+                        });
+
+                      },
+                    ),
+                  ],
                 ),
-                SizedBox(height: 10,),
-                new Container(
-                  child: RaisedButton(
-                    onPressed: (){
-                       _formValidation(context);
-                       Dialogs.showLoadingDialog(context,Constant.keyLoad);
-                       addUser(companyIteamId,teamId,_nameCtlr.text,_phoneNoCtlr.text,_pinNumberCtlr.text,_confirmPinCtlr.text).then((result){
-                         if(result['success']==true){
-
-                           Get.snackbar('${result['message']}','',snackPosition:SnackPosition.TOP);
-                           Navigator.pushNamed(context, '/homeScreen');
-                         }
-                          else if(result['success']==null){
-                           Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
-                           Get.snackbar('প্রদানকৃত নাম্বারে ইতোমধ্যে নিবন্ধন সম্পন্ন হয়েছে।','',snackPosition:SnackPosition.TOP);
-                         }
-
-                       });
-                    },
-                    color: Constant.primaryColor,
-                    child: Text('সাবমিট করুন',style: GoogleFonts.roboto(color: Colors.white),),
-                  ),
-                )
-              ],
-            ),
-          )
+              ),
         ),
         );
   }

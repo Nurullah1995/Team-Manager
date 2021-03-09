@@ -8,8 +8,8 @@ class Constant{
   static final keyLoad = GlobalKey();
   static final formkey = GlobalKey<FormState>();
   static final formkeyforEdit = GlobalKey<FormState>();
-  static final scaffoldKeyForvisitPlace = GlobalKey<ScaffoldState>();
+//  static final scaffoldKeyForvisitPlace = GlobalKey<ScaffoldState>();
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
-  static final String url = "https://adbakshow.xyz/tm";
+  static final String url = "https://outreachmanager.xyz";
 
 }

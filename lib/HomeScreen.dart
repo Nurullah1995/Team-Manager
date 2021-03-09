@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setUserRole(response['user']['team']);
          setUserImage(response['user']['image']);
          setUserPhoneNo(response['user']['contact']);
-         Navigator.pushNamed(context,'/visitorScreen');
+         Navigator.pushReplacementNamed(context,'/visitorScreen');
       }
       else if(response['errors']!=null){
         Navigator.of(Constant.keyLoad.currentContext,rootNavigator: true).pop();
@@ -78,137 +78,164 @@ class _HomeScreenState extends State<HomeScreen> {
       child: new Padding(padding: const EdgeInsets.all(5.0),child: new Center(child: new CircularProgressIndicator())),
     ):new Container();
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor:  Color(0xffffffff),
-        body: Container(
-         width: MediaQuery.of(context).size.width,
-          color: Color(0xffffffff),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 25,right: 25,top: 10),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                     SizedBox(height: 10,),
-                     Image.asset("assets/logo.png",height: 150,width: 250,),
 
-                  Container(
-                    alignment: Alignment.topLeft,
-                      child: Text("ফোন নাম্বার",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
-                  ),
-                  TextFormField(
-                    controller: _phoneNumber,
-                    maxLength: 11,
-                    keyboardType:TextInputType.number,
-                    decoration: InputDecoration(
-                      isDense: true,                      // Added this
-                      contentPadding: EdgeInsets.all(8),
-                      focusColor: Colors.grey,
-                      hoverColor:Colors.grey ,
-                      prefixIcon: Icon(Icons.call,),
-                    ),
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'পরবর্তি ধাপে যেতে ফোন নাম্বার দিন';
-                      }
-                      return null;
-                    },
-                  ),
-                  Container(
+    Future<bool> _onWillPop() async {
+      return (await showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          title: new Text('আপনি নিশ্চিত ?'),
+          content: new Text('আপনি কি এপ্লিকেশন থেকে বের হতে চাচ্ছেন ?'),
+          actions: <Widget>[
+            new FlatButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: new Text('না'),
+            ),
+            new FlatButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: new Text('হ্যাঁ'),
+            ),
+          ],
+        ),
+      )) ?? false;
+    }
+
+    return WillPopScope(
+      onWillPop:_onWillPop,
+      child: SafeArea(
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          backgroundColor:  Color(0xffffffff),
+          body: Container(
+           width: MediaQuery.of(context).size.width,
+            color: Color(0xffffffff),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 25,right: 25,top: 10),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                       SizedBox(height: 10,),
+                       Image.asset("assets/logo.png",height: 150,width: 250,),
+
+                    Container(
                       alignment: Alignment.topLeft,
-                      child: Text("পিন কোড",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
-                  ),
-                  TextFormField(
-                    controller: _pinNumber,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      isDense: true,                      // Added this
-                      contentPadding: EdgeInsets.all(8),
-                      focusColor: Colors.grey,
-                      hoverColor:Colors.grey ,
-                      prefixIcon: Icon(Icons.lock,),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: (){
-                          setState(() {
-                            _passwordVisible = !_passwordVisible;
-                          });
-                        },
+                        child: Text("ফোন নাম্বার",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
+                    ),
+                    TextFormField(
+                      controller: _phoneNumber,
+                      maxLength: 11,
+                      keyboardType:TextInputType.number,
+                      decoration: InputDecoration(
+                        isDense: true,                      // Added this
+                        contentPadding: EdgeInsets.all(8),
+                        focusColor: Colors.grey,
+                        hoverColor:Colors.grey ,
+                        prefixIcon: Icon(Icons.call,),
                       ),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'পরবর্তি ধাপে যেতে ফোন নাম্বার দিন';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      // add your custom validation here.
-                      if (value.isEmpty) {
-                        return 'লগ ইন করতে পিন নাম্বার দিন';
-                      }
-                      if (value.length < 5) {
-                        return 'Must be more than 4 charater';
-                      }
-                      return null;
-                    },
-                    obscureText: _passwordVisible,
-                  ),
-                  SizedBox(height: 5,),
-                  Container(
-                      alignment: Alignment.topLeft,
-                      child: Text("পিন কোড ভুলে গিয়েছেন? ",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
-                  ),
-                  SizedBox(height: 5,),
-                 Row(
-                   children: [
-                     InkWell(
-                       onTap: (){
+                    Container(
+                        alignment: Alignment.topLeft,
+                        child: Text("পিন কোড",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
+                    ),
+                    TextFormField(
+                      controller: _pinNumber,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        isDense: true,                      // Added this
+                        contentPadding: EdgeInsets.all(8),
+                        focusColor: Colors.grey,
+                        hoverColor:Colors.grey ,
+                        prefixIcon: Icon(Icons.lock,),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: (){
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                      validator: (value) {
+                        // add your custom validation here.
+                        if (value.isEmpty) {
+                          return 'লগ ইন করতে পিন নাম্বার দিন';
+                        }
+                        if (value.length < 5) {
+                          return 'Must be more than 4 charater';
+                        }
+                        return null;
+                      },
+                      obscureText: _passwordVisible,
+                    ),
+                    SizedBox(height: 5,),
+                    Container(
+                        alignment: Alignment.topLeft,
+                        child: Text("পিন কোড ভুলে গিয়েছেন? ",style: GoogleFonts.roboto(fontSize:15 ,color:Color(0xff000000) ),)
+                    ),
+                    SizedBox(height: 5,),
+                   Row(
+                     children: [
+                       InkWell(
+                         onTap: (){
 //                         if(_phoneNumber.text!=null){
 //                           createOTp(_phoneNumber.text).then((value) {
 //                             print(value);
 //                           });
 //
 //                         }
-                         Navigator.push(context, MaterialPageRoute(builder: (context)=>AuthenticationStepOneScreen(_phoneNumber.text)));
-                       },
-                       child: Container(
-                           alignment: Alignment.topLeft,
-                           child: Text("নতুন করে পিন সেট করুন",style: GoogleFonts.roboto(fontSize:15 ,color:Constant.primaryColor ),)
+                           Navigator.push(context, MaterialPageRoute(builder: (context)=>AuthenticationStepOneScreen(_phoneNumber.text)));
+                         },
+                         child: Container(
+                             alignment: Alignment.topLeft,
+                             child: Text("নতুন করে পিন সেট করুন",style: GoogleFonts.roboto(fontSize:15 ,color:Constant.primaryColor ),)
+                         ),
                        ),
-                     ),
-                     SizedBox(width: 5,),
-                     Image.asset("assets/next 1.png"),
-                   ],
-                 ),
-                  SizedBox(height: 5,),
-                  Expanded(
-                    flex: 3,
-                    child: Container(
+                       SizedBox(width: 5,),
+                       Image.asset("assets/next 1.png"),
+                     ],
+                   ),
+                    SizedBox(height: 5,),
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                      ),
                     ),
-                  ),
-                  MaterialButtonForWhole('লগইন করুন',onPressed: (){
-                    _formValidation();
-                  },),
-                  SizedBox(height: 20,),
-                  RichText(
-                    text: TextSpan(
-                      text: 'নিবন্ধন করতে চান ?',
-                      style: TextStyle(color: Colors.grey),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: '   নিবন্ধন করুন ',
-                          style: TextStyle(color: Constant.primaryColor),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                             Navigator.pushNamed(context, '/registrationScreen');
-                          }),
-                      ],
+                    MaterialButtonForWhole('লগইন করুন',onPressed: (){
+                      _formValidation();
+                    },),
+                    SizedBox(height: 20,),
+                    RichText(
+                      text: TextSpan(
+                        text: 'নিবন্ধন করতে চান ?',
+                        style: TextStyle(color: Colors.grey),
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: '   নিবন্ধন করুন ',
+                            style: TextStyle(color: Constant.primaryColor),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                               Navigator.pushNamed(context, '/registrationScreen');
+                            }),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

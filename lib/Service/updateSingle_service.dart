@@ -10,8 +10,7 @@ import 'SharePrefarence.dart';
 
 Future updateSingleBusinessItem(int eiditId,String contact, String ownerName, String orgName,String orgType, String newFollow,
     File img,
-    String distict,String thana, String address) async {
-
+    String distict,String thana, String address,String feedback) async {
 
   var token=await getTokenValue();
   Map<String, String> headers = {
@@ -37,7 +36,9 @@ Future updateSingleBusinessItem(int eiditId,String contact, String ownerName, St
   request.fields['district'] = distict;
   request.fields['thana'] = thana;
   request.fields['address'] = address;
-
+  if(feedback!=null){
+    request.fields['feedback'] = feedback;
+  }
   final response = await request.send();
   return response;
 }

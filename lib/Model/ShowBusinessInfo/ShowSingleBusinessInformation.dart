@@ -34,6 +34,7 @@ class VisitedPlace {
     this.thana,
     this.district,
     this.address,
+    this.feedback,
     this.nextFollowup,
     this.orgImg,
   });
@@ -46,6 +47,7 @@ class VisitedPlace {
   String thana;
   String district;
   String address;
+  String feedback;
   String nextFollowup;
   String orgImg;
 
@@ -58,6 +60,7 @@ class VisitedPlace {
     thana: json["thana"],
     district: json["district"],
     address: json["address"],
+    feedback: json["feedback"],
     nextFollowup: json["nextFollowup"],
     orgImg: json["orgImg"],
   );
@@ -71,6 +74,7 @@ class VisitedPlace {
     "thana": thana,
     "district": district,
     "address": address,
+    "feedback": feedback,
     "nextFollowup": nextFollowup,
     "orgImg": orgImg,
   };

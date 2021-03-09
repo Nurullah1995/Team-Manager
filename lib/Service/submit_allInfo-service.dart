@@ -29,14 +29,12 @@ Future submitAllInfo(String contact, String ownerName, String orgName,String org
     request.fields['nextFollowup'] = newFollow;
   }
  // request.fields['orgImage'] = productinfo.regularPrice;
-  if(img!=null){
-    request.files.add(
-        await http.MultipartFile.fromPath(
-          'orgImage',
-          img.path,
-        )
-    );
-  }
+  request.files.add(
+      await http.MultipartFile.fromPath(
+        'orgImage',
+        img.path,
+      )
+  );
   request.fields['lat'] = lat;
   request.fields['long'] = long;
   request.fields['district'] = distict;

@@ -10,14 +10,14 @@ class ReportScreen extends StatefulWidget {
 
 class _ReportScreenState extends State<ReportScreen> {
 //final  ReportController _reportController=Get.put(ReportController());
-  Future<List<ReportModel>> reportlist;
+  Future<List<ReportModel>> reportList;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    reportlist=fetchReport();
-    print(reportlist);
+    reportList=fetchReport();
+    print(reportList);
   }
 
   @override
@@ -25,10 +25,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return SafeArea(
       child: WillPopScope(
         onWillPop: () async {
-          if (Constant.navigatorKey.currentState.canPop()) {
-            Constant.navigatorKey.currentState.pop();
-            return false;
-          }
+          Navigator.pop(context);
           return true;
         },
         child: Scaffold(
@@ -43,10 +40,10 @@ class _ReportScreenState extends State<ReportScreen> {
             title:Text("রিপোর্ট",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
           ),
           body:FutureBuilder<List<ReportModel>>(
-            future: reportlist, // async work
+            future: reportList, // async work
             builder: (BuildContext context, AsyncSnapshot<List<ReportModel>> snapshot) {
               switch (snapshot.connectionState) {
-                case ConnectionState.waiting: return Text('Loading....');
+                case ConnectionState.waiting: return Center(child: Text('Loading....',style: TextStyle(color: Colors.green,fontSize: 22),));
                 default:
                   if (snapshot.hasError)
                     return Text('Error: ${snapshot.error}');
@@ -62,7 +59,7 @@ class _ReportScreenState extends State<ReportScreen> {
                             width:MediaQuery.of(context).size.width ,
                             child: Padding(
                               padding: const EdgeInsets.only(left: 25,right: 25,top: 25,bottom: 10),
-                              child: Text("ভিসিট রিপোর্ট",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
+                              child: Text("ভিজিট রিপোর্ট",style: GoogleFonts.roboto(color: Color(0xff333333),fontSize: 18),),
                             ),
                           ),
                           Container(

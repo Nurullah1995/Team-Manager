@@ -66,6 +66,8 @@ Future<String> getUserPhoneNo()async{
 
 void logOut()async{
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  var test =await preferences.remove('token');
-  print(test);
+  preferences?.clear();
+
+  // var test =await preferences.remove('token');
+  // print(test);
 }

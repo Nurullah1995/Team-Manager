@@ -3,18 +3,15 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:test_app/splash_screen.dart';
 import 'HomeScreen.dart';
 import 'Util/Constant.dart';
-import 'View/Screen/BusinessInfo/SelectedBusinessType.dart';
-import 'View/Screen/BusinessInfo/SelectedUpdateCategoryforUpdateScreen.dart';
-import 'View/Screen/BusinessInfo/ShowBusinessInformation.dart';
-import 'View/Screen/District/DistrictListType.dart';
-import 'View/Screen/District/selectDistrictForUpdatePage.dart';
 import 'View/Screen/Login/LoginScreen.dart';
 import 'View/Screen/Login/registration_screen.dart';
 import 'View/Screen/NextFollwoUP/NextFollowUpScreen.dart';
 import 'View/Screen/PinRest/PinResetSucessfullLoader.dart';
 import 'View/Screen/Report/ReportScreen.dart';
 import 'View/Screen/SubmitSuccessFull/NextFollowUpSuccessFull.dart';
+import 'View/Screen/SubmitSuccessFull/RegistrationSuceess.dart';
 import 'View/Screen/SubmitSuccessFull/SubmitSuccessFullScreen.dart';
+import 'View/Screen/Visitor/VisitRegisterScreenOne.dart';
 import 'View/Screen/Visitor/VisitorScreen.dart';
 
 void main() {
@@ -32,8 +29,6 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xff39B54A),
         textTheme: TextTheme(bodyText2: TextStyle(color:Constant.textColorWhite)),
       ),
-     // home:SplashScreen(),
-      //(title: 'Flutter Login'),
       initialRoute: '/',
       routes: {
         // When navigating to the "/" route, build the FirstScreen widget.
@@ -41,13 +36,11 @@ class MyApp extends StatelessWidget {
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/homeScreen': (context) => HomeScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
+        '/regSuccessFull': (context) => RegeistrationSuccessfullScreen(),
         '/visitorScreen': (context) => VisitorScreen(),
-        // '/showbusinessInfo': (context) => ShowBusinessInformation(),
+        '/visitorScreenOne': (context) => VisitRegisterScreenOne(),
+         //'/showbusinessInfo': (context) => ShowBusinessInformation(),
         '/loginScreen': (context) => LoginScreen(),
-         '/registerCategory': (context) => SelectBusinessCategory(),
-         '/districtTypeforRegister': (context) => DistrictListType(),
-         '/updateCatScreen': (context) => SelectedBusiessCategoryScreenForUpdateScreen(),
-         '/updateDistrictScreen': (context) => DistrictCategoryForUpdateScreen(),
          '/submiSuccessful': (context) => SubmitSuccessFullPage(),
          '/netFollowUPScreen': (context) => NextFollowUpScreen(),
          '/reportScreen': (context) => ReportScreen(),
